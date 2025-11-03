@@ -480,10 +480,10 @@ const currentAmount = goal.currentAmount_c || goal.currentAmount
                     </div>
                   )}
 
-                  {!isCompleted && (
+{!isCompleted && (
                     <div className="mt-4">
                       <Button
-onClick={() => openContributeModal(goal)}
+                        onClick={() => openContributeModal(goal)}
                         variant="outline"
                         className="w-full"
                         size="sm"
@@ -491,7 +491,7 @@ onClick={() => openContributeModal(goal)}
                         <ApperIcon name="Plus" className="h-4 w-4 mr-2" />
                         Add Contribution
                       </Button>
-</div>
+                    </div>
                   )}
                 </div>
               </motion.div>
