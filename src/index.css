@@ -17,7 +17,6 @@
   .btn-primary {
     @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200;
   }
-  
   .btn-secondary {
     @apply bg-white border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-600 font-medium px-6 py-2.5 rounded-lg shadow-sm hover:shadow-md transform hover:scale-[1.02] transition-all duration-200;
   }
@@ -51,15 +50,13 @@
   padding: 16px;
   min-height: auto;
 }
-
 .Toastify__toast--success {
-  background: linear-gradient(135deg, #52C41A 0%, #389e0d 100%);
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
 }
 
 .Toastify__toast--error {
   background: linear-gradient(135deg, #F5222D 0%, #cf1322 100%);
 }
-
 .Toastify__toast--warning {
   background: linear-gradient(135deg, #FAAD14 0%, #d48806 100%);
 }
@@ -82,21 +79,21 @@
   background: #f1f5f9;
   border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #00875A 0%, #006B47 100%);
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #006B47 0%, #005138 100%);
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
 }
 
 /* Chart Styling */
 .apexcharts-tooltip {
   background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(0, 135, 90, 0.1) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+          backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(239, 68, 68, 0.1) !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
 }
@@ -133,12 +130,14 @@
 /* Glassmorphism Effects */
 .glass {
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .glass-card {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.1);
 }
