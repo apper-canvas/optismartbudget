@@ -455,17 +455,16 @@ const budgetCategory = budget.category_c?.Name || budget.category
                             Cancel
                           </Button>
                         </div>
-                      </div>
+</div>
                     </motion.div>
                   )}
-                </Card>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      )}
-    </div>
-  )
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        )}
+      </div>
+    )
 }
 
 export default Budgets
