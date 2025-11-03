@@ -489,7 +489,7 @@ This goal is past its target date
                         size="sm"
                       >
                         <ApperIcon name="Plus" className="h-4 w-4 mr-2" />
-                        Add Contribution
+Add Contribution
                       </Button>
                     </div>
                   )}
