@@ -449,51 +449,50 @@ const currentAmount = goal.currentAmount_c || goal.currentAmount
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                    <span className="text-sm font-medium text-gray-700">Remaining</span>
+<span className="text-sm font-medium text-gray-700">Remaining</span>
                     <span className={`font-bold ${isCompleted ? "text-success" : "text-primary-600"}`}>
                       {formatCurrency(remaining)}
-                      </span>
-                    </div>
+                    </span>
                   </div>
-
-                  {isCompleted && (
-                    <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <ApperIcon name="CheckCircle" className="h-4 w-4 text-success" />
-                        <span className="text-sm font-medium text-success">Goal Achieved!</span>
-                      </div>
-                      <p className="text-xs text-green-600 mt-1">
-                        Congratulations on reaching your savings goal!
-                      </p>
-                    </div>
-                  )}
-
-                  {isOverdue && !isCompleted && (
-                    <div className="mt-4 p-3 bg-red-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <ApperIcon name="AlertTriangle" className="h-4 w-4 text-error" />
-                        <span className="text-sm font-medium text-error">Overdue</span>
-                      </div>
-                      <p className="text-xs text-red-600 mt-1">
-This goal is past its target date
-                      </p>
-                    </div>
-                  )}
-
-                  {!isCompleted && (
-                    <div className="mt-4">
-                      <Button
-                        onClick={() => openContributeModal(goal)}
-                        variant="outline"
-                        className="w-full"
-                        size="sm"
-                      >
-                        <ApperIcon name="Plus" className="h-4 w-4 mr-2" />
-Add Contribution
-                      </Button>
-                    </div>
-                  )}
                 </div>
+
+                {isCompleted && (
+                  <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ApperIcon name="CheckCircle" className="h-4 w-4 text-success" />
+                      <span className="text-sm font-medium text-success">Goal Achieved!</span>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">
+                      Congratulations on reaching your savings goal!
+                    </p>
+                  </div>
+                )}
+
+                {isOverdue && !isCompleted && (
+                  <div className="mt-4 p-3 bg-red-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ApperIcon name="AlertTriangle" className="h-4 w-4 text-error" />
+                      <span className="text-sm font-medium text-error">Overdue</span>
+                    </div>
+                    <p className="text-xs text-red-600 mt-1">
+                      This goal is past its target date
+                    </p>
+                  </div>
+                )}
+
+                {!isCompleted && (
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => openContributeModal(goal)}
+                      variant="outline"
+                      className="w-full"
+                      size="sm"
+                    >
+                      <ApperIcon name="Plus" className="h-4 w-4 mr-2" />
+                      Add Contribution
+                    </Button>
+                  </div>
+                )}
               </motion.div>
             )
           })}
