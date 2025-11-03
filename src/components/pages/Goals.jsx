@@ -475,12 +475,12 @@ const currentAmount = goal.currentAmount_c || goal.currentAmount
                         <span className="text-sm font-medium text-error">Overdue</span>
                       </div>
                       <p className="text-xs text-red-600 mt-1">
-                        This goal is past its target date
+This goal is past its target date
                       </p>
                     </div>
                   )}
 
-{!isCompleted && (
+                  {!isCompleted && (
                     <div className="mt-4">
                       <Button
                         onClick={() => openContributeModal(goal)}
