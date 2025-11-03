@@ -1,42 +1,46 @@
-import React, { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { toast } from "react-toastify"
-import Button from "@/components/atoms/Button"
-import FormField from "@/components/molecules/FormField"
-import CategoryIcon from "@/components/molecules/CategoryIcon"
-import ApperIcon from "@/components/ApperIcon"
-import { transactionService } from "@/services/api/transactionService"
-import { categoryService } from "@/services/api/categoryService"
-import { formatDateInput } from "@/utils/date"
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { transactionService } from "@/services/api/transactionService";
+import { categoryService } from "@/services/api/categoryService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import CategoryIcon from "@/components/molecules/CategoryIcon";
+import FormField from "@/components/molecules/FormField";
+import { formatDateInput } from "@/utils/date";
 
 const TransactionForm = ({ transaction, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    type: "expense",
-    amount: "",
-    category: "",
-    date: formatDateInput(new Date()),
-    description: ""
+    type_c: "expense",
+    amount_c: "",
+    category_c: "",
+    date_c: formatDateInput(new Date()),
+    description_c: ""
   })
   const [categories, setCategories] = useState([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
+  const formatDateInput = (date) => {
+    return new Date(date).toISOString().split('T')[0]
+  }
 
   useEffect(() => {
     if (transaction) {
       setFormData({
-        type: transaction.type,
-        amount: transaction.amount.toString(),
-        category: transaction.category,
-        date: formatDateInput(transaction.date),
-        description: transaction.description
-      })
+        type_c: transaction.type_c || transaction.type,
+        amount_c: (transaction.amount_c || transaction.amount).toString(),
+        category_c: transaction.category_c?.Name || transaction.category,
+        date_c: formatDateInput(transaction.date_c || transaction.date),
+        description_c: transaction.description_c || transaction.description
+})
     }
   }, [transaction])
 
+  useEffect(() => {
+    loadCategories()
+  }, [])
   const loadCategories = async () => {
     try {
       const data = await categoryService.getAll()
@@ -46,18 +50,18 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
     }
   }
 
-  const validateForm = () => {
+const validateForm = () => {
     const newErrors = {}
     
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+    if (!formData.amount_c || parseFloat(formData.amount_c) <= 0) {
       newErrors.amount = "Please enter a valid amount"
     }
     
-    if (!formData.category) {
+    if (!formData.category_c) {
       newErrors.category = "Please select a category"
     }
     
-    if (!formData.date) {
+    if (!formData.date_c) {
       newErrors.date = "Please select a date"
     }
 
@@ -76,9 +80,11 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
     
     try {
       const transactionData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString()
+type_c: formData.type_c,
+        amount_c: parseFloat(formData.amount_c),
+        category_c: formData.category_c,
+        date_c: new Date(formData.date_c).toISOString(),
+        description_c: formData.description_c
       }
 
       if (transaction) {
@@ -98,15 +104,14 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
     }
   }
 
-  const handleInputChange = (field, value) => {
+const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
     }
   }
 
-  const filteredCategories = categories.filter(cat => cat.type === formData.type)
-
+  const filteredCategories = categories.filter(cat => cat.type === formData.type_c)
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -130,13 +135,13 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 block">Transaction Type</label>
           <div className="flex gap-3">
-            {["income", "expense"].map((type) => (
+{["income", "expense"].map((type) => (
               <button
                 key={type}
                 type="button"
-                onClick={() => handleInputChange("type", type)}
+                onClick={() => handleInputChange("type_c", type)}
                 className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                  formData.type === type
+                  formData.type_c === type
                     ? "border-primary-500 bg-primary-50 text-primary-700"
                     : "border-gray-200 hover:border-gray-300 text-gray-700"
                 }`}
@@ -155,14 +160,14 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Amount */}
-          <FormField
+<FormField
             label="Amount"
             type="input"
             inputType="number"
             step="0.01"
             placeholder="0.00"
-            value={formData.amount}
-            onChange={(e) => handleInputChange("amount", e.target.value)}
+            value={formData.amount_c}
+            onChange={(e) => handleInputChange("amount_c", e.target.value)}
             error={errors.amount}
           />
 
@@ -171,8 +176,8 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
             label="Date"
             type="input"
             inputType="date"
-            value={formData.date}
-            onChange={(e) => handleInputChange("date", e.target.value)}
+            value={formData.date_c}
+            onChange={(e) => handleInputChange("date_c", e.target.value)}
             error={errors.date}
           />
         </div>
@@ -181,19 +186,19 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 block">Category</label>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-            {filteredCategories.map((category) => (
+{filteredCategories.map((category) => (
               <button
                 key={category.Id}
                 type="button"
-                onClick={() => handleInputChange("category", category.name)}
+                onClick={() => handleInputChange("category_c", category.name_c || category.name)}
                 className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                  formData.category === category.name
-                    ? "border-primary-500 bg-primary-50"
+                  formData.category_c === (category.name_c || category.name)
+                    ? "border-primary-500 bg-primary-50 text-primary-700"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <CategoryIcon category={category.name} size="md" />
-                <span className="text-xs font-medium text-center">{category.name}</span>
+                <CategoryIcon category={category.name_c || category.name} size="md" />
+                <span className="text-xs font-medium text-center">{category.name_c || category.name}</span>
               </button>
             ))}
           </div>
@@ -203,13 +208,13 @@ const TransactionForm = ({ transaction, onSave, onCancel }) => {
         </div>
 
         {/* Description */}
-        <FormField
+<FormField
           label="Description (Optional)"
           type="textarea"
           placeholder="Add a note about this transaction..."
           rows="3"
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
+          value={formData.description_c}
+          onChange={(e) => handleInputChange("description_c", e.target.value)}
         />
 
         {/* Actions */}

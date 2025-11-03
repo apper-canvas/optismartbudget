@@ -1,0 +1,139 @@
+{
+  "/": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Dashboard access requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/transactions": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Transactions require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/budgets": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Budgets require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/goals": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Goals require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/reports": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Reports require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/login": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Login page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/signup": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Signup page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/callback": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "OAuth callback is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/error": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Error page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/reset-password/*/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Password reset is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/prompt-password/*/*/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Password prompt is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  }
+}

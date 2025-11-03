@@ -24,11 +24,11 @@ const TransactionList = ({ refreshTrigger, onEdit }) => {
   const loadTransactions = async () => {
     try {
       setError("")
-      const data = await transactionService.getAll()
+const data = await transactionService.getAll()
       // Sort by date (newest first) then by Id
       const sortedData = data.sort((a, b) => {
-        const dateA = new Date(a.date)
-        const dateB = new Date(b.date)
+        const dateA = new Date(a.date_c || a.date)
+        const dateB = new Date(b.date_c || b.date)
         if (dateB.getTime() !== dateA.getTime()) {
           return dateB.getTime() - dateA.getTime()
         }
@@ -98,25 +98,25 @@ const TransactionList = ({ refreshTrigger, onEdit }) => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <CategoryIcon category={transaction.category} size="lg" />
+<CategoryIcon category={transaction.category_c?.Name || transaction.category} size="lg" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{transaction.category}</p>
+                      <p className="font-medium text-gray-900">{transaction.category_c?.Name || transaction.category}</p>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        transaction.type === "income"
+                        (transaction.type_c || transaction.type) === "income"
                           ? "bg-success text-green-800 bg-opacity-20"
                           : "bg-error text-red-800 bg-opacity-20"
                       }`}>
-                        {transaction.type}
+                        {transaction.type_c || transaction.type}
                       </span>
                     </div>
-                    {transaction.description && (
+                    {(transaction.description_c || transaction.description) && (
                       <p className="text-sm text-gray-500 mt-1 truncate">
-                        {transaction.description}
+                        {transaction.description_c || transaction.description}
                       </p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">
-                      {formatDate(transaction.date)}
+                      {formatDate(transaction.date_c || transaction.date)}
                     </p>
                   </div>
                 </div>

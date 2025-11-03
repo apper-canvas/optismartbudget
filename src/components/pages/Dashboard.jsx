@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react"
-import { useOutletContext } from "react-router-dom"
-import { motion } from "framer-motion"
-import StatCard from "@/components/molecules/StatCard"
-import TransactionList from "@/components/organisms/TransactionList"
-import SpendingChart from "@/components/organisms/SpendingChart"
-import Button from "@/components/atoms/Button"
-import TransactionForm from "@/components/organisms/TransactionForm"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import ApperIcon from "@/components/ApperIcon"
-import { transactionService } from "@/services/api/transactionService"
-import { budgetService } from "@/services/api/budgetService"
-import { formatCurrency } from "@/utils/currency"
-import { getCurrentMonth } from "@/utils/date"
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import { transactionService } from "@/services/api/transactionService";
+import { budgetService } from "@/services/api/budgetService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import TransactionForm from "@/components/organisms/TransactionForm";
+import SpendingChart from "@/components/organisms/SpendingChart";
+import TransactionList from "@/components/organisms/TransactionList";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import StatCard from "@/components/molecules/StatCard";
+import { getCurrentMonth } from "@/utils/date";
+import { formatCurrency } from "@/utils/currency";
 
 const Dashboard = () => {
   const outletContext = useOutletContext()
+  const [transactions, setTransactions] = useState([])
   const [stats, setStats] = useState({
     totalIncome: 0,
     totalExpenses: 0,
@@ -31,38 +32,39 @@ const Dashboard = () => {
     loadDashboardData()
   }, [refreshTrigger])
 
-  const loadDashboardData = async () => {
+const loadDashboardData = async () => {
     try {
       setError("")
+      const currentMonth = getCurrentMonth()
       const [transactions, budgets] = await Promise.all([
         transactionService.getAll(),
         budgetService.getAll()
       ])
 
-      const currentMonth = getCurrentMonth()
+      setTransactions(transactions)
       const currentMonthTransactions = transactions.filter(t => {
-        const transactionDate = new Date(t.date)
+        const transactionDate = new Date(t.date_c || t.date)
         return transactionDate >= currentMonth.start && transactionDate <= currentMonth.end
       })
 
-      const income = currentMonthTransactions
-        .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0)
+      const totalIncome = currentMonthTransactions
+        .filter(t => (t.type_c || t.type) === "income")
+        .reduce((sum, t) => sum + (t.amount_c || t.amount), 0)
 
-      const expenses = currentMonthTransactions
-        .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0)
+      const totalExpenses = currentMonthTransactions
+        .filter(t => (t.type_c || t.type) === "expense")
+        .reduce((sum, t) => sum + (t.amount_c || t.amount), 0)
 
       const totalBudget = budgets
-        .filter(b => b.month === currentMonth.key)
-        .reduce((sum, b) => sum + b.monthlyLimit, 0)
+        .filter(b => (b.month_c || b.month) === currentMonth.key)
+        .reduce((sum, b) => sum + (b.monthlyLimit_c || b.monthlyLimit), 0)
 
-      const remaining = totalBudget - expenses
+      const remaining = totalBudget - totalExpenses
 
       setStats({
-        totalIncome: income,
-        totalExpenses: expenses,
-        netBalance: income - expenses,
+        totalIncome,
+        totalExpenses,
+        totalBudget,
         remainingBudget: remaining
       })
     } catch (err) {

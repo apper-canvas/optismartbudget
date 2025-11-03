@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react"
-import { useOutletContext } from "react-router-dom"
-import { motion } from "framer-motion"
-import { toast } from "react-toastify"
-import Button from "@/components/atoms/Button"
-import Card from "@/components/atoms/Card"
-import FormField from "@/components/molecules/FormField"
-import ProgressRing from "@/components/molecules/ProgressRing"
-import CategoryIcon from "@/components/molecules/CategoryIcon"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import ApperIcon from "@/components/ApperIcon"
-import { budgetService } from "@/services/api/budgetService"
-import { categoryService } from "@/services/api/categoryService"
-import { transactionService } from "@/services/api/transactionService"
-import { formatCurrency } from "@/utils/currency"
-import { getCurrentMonth } from "@/utils/date"
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { budgetService } from "@/services/api/budgetService";
+import { categoryService } from "@/services/api/categoryService";
+import { transactionService } from "@/services/api/transactionService";
+import ApperIcon from "@/components/ApperIcon";
+import Select from "@/components/atoms/Select";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import Error from "@/components/ui/Error";
+import CategoryIcon from "@/components/molecules/CategoryIcon";
+import FormField from "@/components/molecules/FormField";
+import ProgressRing from "@/components/molecules/ProgressRing";
+import { getCurrentMonth } from "@/utils/date";
+import { formatCurrency } from "@/utils/currency";
 
 const Budgets = () => {
   const outletContext = useOutletContext()
@@ -63,14 +64,15 @@ const [budgets, setBudgets] = useState([])
 
   const calculateSpentAmount = (category) => {
     const currentMonth = getCurrentMonth()
-    const categoryTransactions = transactions.filter(t => {
-      const transactionDate = new Date(t.date)
-      return t.type === "expense" && 
-             t.category === category &&
+const categoryTransactions = transactions.filter(t => {
+      const transactionDate = new Date(t.date_c || t.date)
+      const transactionCategory = t.category_c?.Name || t.category
+      return (t.type_c || t.type) === "expense" && 
+             transactionCategory === category &&
              transactionDate >= currentMonth.start && 
              transactionDate <= currentMonth.end
     })
-    return categoryTransactions.reduce((sum, t) => sum + t.amount, 0)
+    return categoryTransactions.reduce((sum, t) => sum + (t.amount_c || t.amount), 0)
   }
 
 const handleSubmit = async (e) => {
@@ -88,21 +90,21 @@ const handleSubmit = async (e) => {
     }
 
     // Check if budget already exists for this category
-    const existingBudget = budgets.find(b => b.category === formData.category)
+const existingBudget = budgets.find(b => (b.category_c?.Name || b.category) === formData.category)
     if (existingBudget) {
-      toast.error("Budget already exists for this category")
+      setError("Budget already exists for this category")
       return
     }
 
     try {
-      const currentMonth = getCurrentMonth()
+      setError("")
       const budgetData = {
-        category: formData.category,
-        monthlyLimit: monthlyLimit,
-        spent: calculateSpentAmount(formData.category),
-        month: currentMonth.key,
-        alertThreshold: alertSettings.threshold,
-        alertMethods: alertSettings.methods
+        category_c: formData.category,
+        monthlyLimit_c: monthlyLimit,
+spent_c: calculateSpentAmount(formData.category),
+        month_c: getCurrentMonth().key,
+        alertThreshold_c: alertSettings.threshold,
+        alertMethods_c: alertSettings.methods
       }
 
       const newBudget = await budgetService.create(budgetData)
@@ -119,9 +121,9 @@ const handleSubmit = async (e) => {
 
   const handleUpdateAlerts = async (budgetId, newAlertSettings) => {
     try {
-      const updatedBudget = await budgetService.update(budgetId, {
-        alertThreshold: newAlertSettings.threshold,
-        alertMethods: newAlertSettings.methods
+const updatedBudget = await budgetService.update(budgetId, {
+        alertThreshold_c: newAlertSettings.threshold,
+        alertMethods_c: newAlertSettings.methods
       })
       setBudgets(prev => prev.map(b => b.Id === budgetId ? updatedBudget : b))
       toast.success("Alert settings updated successfully!")
@@ -135,11 +137,13 @@ const handleSubmit = async (e) => {
     if (showAlertSettings === budgetId) {
       setShowAlertSettings(null)
     } else {
-      const budget = budgets.find(b => b.Id === budgetId)
+const budget = budgets.find(b => b.Id === budgetId)
       if (budget) {
         setAlertSettings({
-          threshold: budget.alertThreshold || 80,
-          methods: budget.alertMethods || ["email", "push"]
+          threshold: budget.alertThreshold_c || budget.alertThreshold || 80,
+          methods: typeof (budget.alertMethods_c || budget.alertMethods) === 'string' 
+            ? (budget.alertMethods_c || budget.alertMethods).split(',') 
+            : (budget.alertMethods_c || budget.alertMethods || ["email", "push"])
         })
       }
       setShowAlertSettings(budgetId)
@@ -161,8 +165,8 @@ const handleSubmit = async (e) => {
     }
   }
 
-  const availableCategories = categories.filter(c => 
-    !budgets.some(b => b.category === c.name)
+const availableCategories = categories.filter(c => 
+    !budgets.some(b => (b.category_c?.Name || b.category) === (c.name_c || c.name))
   )
 
   if (loading) {
@@ -227,8 +231,8 @@ const handleSubmit = async (e) => {
               >
                 <option value="">Select a category</option>
                 {availableCategories.map(category => (
-                  <option key={category.Id} value={category.name}>
-                    {category.name}
+<option key={category.Id} value={category.name_c || category.name}>
+                    {category.name_c || category.name}
                   </option>
                 ))}
               </FormField>
@@ -279,10 +283,14 @@ const handleSubmit = async (e) => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {budgets.map((budget, index) => {
-            const spent = calculateSpentAmount(budget.category)
-            const progress = (spent / budget.monthlyLimit) * 100
-            const remaining = budget.monthlyLimit - spent
-            const isOverBudget = spent > budget.monthlyLimit
+const budgetCategory = budget.category_c?.Name || budget.category
+            const spent = calculateSpentAmount(budgetCategory)
+            const monthlyLimit = budget.monthlyLimit_c || budget.monthlyLimit
+            const progress = (spent / monthlyLimit) * 100
+            const remaining = monthlyLimit - spent
+            const isOverBudget = spent > monthlyLimit
+            const alertThreshold = budget.alertThreshold_c || budget.alertThreshold || 80
+            const isNearLimit = progress >= alertThreshold
 
             return (
               <motion.div
@@ -290,33 +298,35 @@ const handleSubmit = async (e) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover transition-all duration-200"
               >
-<Card className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon category={budget.category} size="lg" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{budget.category}</h3>
-                        <p className="text-sm text-gray-500">Monthly Budget</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleAlertSettings(budget.Id)}
-                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        title="Alert Settings"
-                      >
-                        <ApperIcon name="Settings" className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteBudget(budget.Id)}
-                        className="p-2 text-gray-400 hover:text-error hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <ApperIcon name="Trash2" className="h-4 w-4" />
-                      </button>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <CategoryIcon category={budgetCategory} size="lg" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{budgetCategory}</h3>
+                      <p className="text-xs text-gray-500">{getCurrentMonth().label}</p>
                     </div>
                   </div>
-
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => toggleAlertSettings(budget.Id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs px-2 py-1 h-7"
+                    >
+                      <ApperIcon name="Bell" className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteBudget(budget.Id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs px-2 py-1 h-7 text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <ApperIcon name="Trash2" className="h-3 w-3" />
+                    </Button>
+</div>
+                </div>
                   <div className="flex items-center justify-center mb-6">
                     <ProgressRing
                       progress={Math.min(progress, 100)}
@@ -330,14 +340,14 @@ const handleSubmit = async (e) => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Spent</span>
-                      <span className={`font-semibold ${isOverBudget ? "text-error" : "text-gray-900"}`}>
+<span className={`font-semibold ${isOverBudget ? "text-error" : "text-gray-900"}`}>
                         {formatCurrency(spent)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Budget</span>
                       <span className="font-semibold text-gray-900">
-                        {formatCurrency(budget.monthlyLimit)}
+                        {formatCurrency(monthlyLimit)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-gray-100">

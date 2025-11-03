@@ -59,21 +59,22 @@ const Reports = () => {
         startDate = startOfMonth(subMonths(now, 5))
     }
 
-    const filteredTransactions = transactions.filter(t => {
-      const transactionDate = new Date(t.date)
-      return transactionDate >= startDate && t.type === "expense"
+const filteredTransactions = transactions.filter(t => {
+      const transactionDate = new Date(t.date_c || t.date)
+      return transactionDate >= startDate && (t.type_c || t.type) === "expense"
     })
 
     const categoryTotals = {}
     const categoryTransactions = {}
 
     filteredTransactions.forEach(t => {
-      if (!categoryTotals[t.category]) {
-        categoryTotals[t.category] = 0
-        categoryTransactions[t.category] = 0
+      const category = t.category_c?.Name || t.category
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = 0
+        categoryTransactions[category] = 0
       }
-      categoryTotals[t.category] += t.amount
-      categoryTransactions[t.category] += 1
+      categoryTotals[category] += (t.amount_c || t.amount)
+      categoryTransactions[category] += 1
     })
 
     const totalExpenses = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0)
@@ -98,8 +99,8 @@ const Reports = () => {
       const startDate = startOfMonth(date)
       const endDate = endOfMonth(date)
       
-      const monthTransactions = transactions.filter(t => {
-        const transactionDate = new Date(t.date)
+const monthTransactions = transactions.filter(t => {
+        const transactionDate = new Date(t.date_c || t.date)
         return transactionDate >= startDate && transactionDate <= endDate
       })
 
@@ -126,12 +127,12 @@ const Reports = () => {
   const exportData = () => {
     const csvData = [
       ["Date", "Type", "Category", "Amount", "Description"],
-      ...transactions.map(t => [
-        new Date(t.date).toLocaleDateString(),
-        t.type,
-        t.category,
-        t.amount,
-        t.description || ""
+...transactions.map(t => [
+        new Date(t.date_c || t.date).toLocaleDateString(),
+        t.type_c || t.type,
+        t.category_c?.Name || t.category,
+        t.amount_c || t.amount,
+        t.description_c || t.description || ""
       ])
     ]
 
@@ -241,7 +242,7 @@ const Reports = () => {
                   transition={{ delay: index * 0.05 }}
                   className="flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <CategoryIcon category={item.category} size="lg" />
+<CategoryIcon category={item.category} size="lg" />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-medium text-gray-900">{item.category}</h4>
@@ -304,7 +305,7 @@ const Reports = () => {
                     transition={{ delay: index * 0.05 }}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-4 px-2 font-medium text-gray-900">{month.month}</td>
+<td className="py-4 px-2 font-medium text-gray-900">{month.month}</td>
                     <td className="py-4 px-2 text-right text-success font-semibold">
                       {formatCurrency(month.income)}
                     </td>

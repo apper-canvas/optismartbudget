@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react"
-import { useOutletContext } from "react-router-dom"
-import { motion } from "framer-motion"
-import { toast } from "react-toastify"
-import Button from "@/components/atoms/Button"
-import Card from "@/components/atoms/Card"
-import FormField from "@/components/molecules/FormField"
-import ProgressRing from "@/components/molecules/ProgressRing"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import ApperIcon from "@/components/ApperIcon"
-import { savingsGoalService } from "@/services/api/savingsGoalService"
-import { formatCurrency } from "@/utils/currency"
-import { formatDate, formatDateInput } from "@/utils/date"
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { savingsGoalService } from "@/services/api/savingsGoalService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import Error from "@/components/ui/Error";
+import FormField from "@/components/molecules/FormField";
+import ProgressRing from "@/components/molecules/ProgressRing";
+import { formatDate, formatDateInput } from "@/utils/date";
+import { formatCurrency } from "@/utils/currency";
 
 const Goals = () => {
   const outletContext = useOutletContext()
@@ -81,18 +81,18 @@ try {
         return
       }
 
-      const goalData = {
-        name: formData.name,
-        targetAmount: targetAmount,
-        currentAmount: currentAmount,
-        deadline: new Date(formData.deadline).toISOString()
+const goalData = {
+        name_c: formData.name,
+        targetAmount_c: targetAmount,
+        currentAmount_c: currentAmount,
+        deadline_c: new Date(formData.deadline).toISOString()
       }
 
       if (editingGoal) {
         const updatedGoal = await savingsGoalService.update(editingGoal.Id, goalData)
         setGoals(prev => prev.map(g => g.Id === editingGoal.Id ? updatedGoal : g))
-        toast.success("Savings goal updated successfully!")
       } else {
+        // Creating new goal
         const newGoal = await savingsGoalService.create(goalData)
         setGoals(prev => [...prev, newGoal])
         toast.success("Savings goal created successfully!")
@@ -114,36 +114,39 @@ try {
       return
     }
 
-    const newCurrentAmount = selectedGoal.currentAmount + amount
-    if (newCurrentAmount > selectedGoal.targetAmount) {
-      toast.error("Contribution would exceed target amount")
+const newCurrentAmount = (selectedGoal.currentAmount_c || selectedGoal.currentAmount) + amount
+
+    if (newCurrentAmount > (selectedGoal.targetAmount_c || selectedGoal.targetAmount)) {
+      toast.error("Contribution exceeds target amount")
       return
     }
 
     try {
       const updatedGoal = await savingsGoalService.update(selectedGoal.Id, {
-        ...selectedGoal,
-        currentAmount: newCurrentAmount
+        name_c: selectedGoal.name_c || selectedGoal.name,
+        targetAmount_c: selectedGoal.targetAmount_c || selectedGoal.targetAmount,
+        currentAmount_c: newCurrentAmount,
+        deadline_c: selectedGoal.deadline_c || selectedGoal.deadline
       })
-      
+
       setGoals(prev => prev.map(g => g.Id === selectedGoal.Id ? updatedGoal : g))
       setShowContributeModal(false)
       setSelectedGoal(null)
       setContributionAmount("")
-      toast.success(`Added ${formatCurrency(amount)} to ${selectedGoal.name}!`)
+      toast.success(`Added ${formatCurrency(amount)} to ${selectedGoal.name_c || selectedGoal.name}!`)
     } catch (err) {
       console.error("Failed to add contribution:", err)
       toast.error("Failed to add contribution. Please try again.")
     }
   }
 
-  const handleEditGoal = (goal) => {
+const handleEditGoal = (goal) => {
     setEditingGoal(goal)
     setFormData({
-      name: goal.name,
-      targetAmount: goal.targetAmount.toString(),
-      currentAmount: goal.currentAmount.toString(),
-      deadline: formatDateInput(goal.deadline)
+      name: goal.name_c || goal.name,
+      targetAmount: (goal.targetAmount_c || goal.targetAmount).toString(),
+      currentAmount: (goal.currentAmount_c || goal.currentAmount).toString(),
+      deadline: formatDateInput(goal.deadline_c || goal.deadline)
     })
     setShowGoalForm(true)
   }
@@ -315,9 +318,9 @@ try {
             </div>
 
             <div className="mb-6">
-              <h4 className="font-medium text-gray-900 mb-2">{selectedGoal.name}</h4>
+<h4 className="font-medium text-gray-900 mb-2">{selectedGoal.name_c || selectedGoal.name}</h4>
               <p className="text-sm text-gray-500">
-                Current: {formatCurrency(selectedGoal.currentAmount)} of {formatCurrency(selectedGoal.targetAmount)}
+                Current: {formatCurrency(selectedGoal.currentAmount_c || selectedGoal.currentAmount)} of {formatCurrency(selectedGoal.targetAmount_c || selectedGoal.targetAmount)}
               </p>
             </div>
 
@@ -372,10 +375,12 @@ try {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {goals.map((goal, index) => {
-            const progress = (goal.currentAmount / goal.targetAmount) * 100
-            const remaining = goal.targetAmount - goal.currentAmount
-            const isCompleted = goal.currentAmount >= goal.targetAmount
-            const isOverdue = new Date(goal.deadline) < new Date() && !isCompleted
+const currentAmount = goal.currentAmount_c || goal.currentAmount
+            const targetAmount = goal.targetAmount_c || goal.targetAmount
+            const progress = (currentAmount / targetAmount) * 100
+            const remaining = targetAmount - currentAmount
+            const isCompleted = currentAmount >= targetAmount
+            const isOverdue = new Date(goal.deadline_c || goal.deadline) < new Date() && !isCompleted
 
             return (
               <motion.div
@@ -383,65 +388,70 @@ try {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover transition-all duration-200"
               >
-                <Card className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-lg ${
-                        isCompleted ? "bg-success text-white" : "bg-primary-50 text-primary-600"
-                      }`}>
-                        <ApperIcon name={isCompleted ? "CheckCircle" : "Trophy"} className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{goal.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          Target: {formatDate(goal.deadline)}
-                        </p>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                          <ApperIcon name="Target" className="h-4 w-4 text-primary-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{goal.name_c || goal.name}</h3>
+                          <p className="text-xs text-gray-500">
+                            Target: {formatDate(goal.deadline_c || goal.deadline)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
+                    <div className="flex gap-2">
+                      <Button
                         onClick={() => handleEditGoal(goal)}
-                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs px-2 py-1 h-7"
                       >
-                        <ApperIcon name="Edit" className="h-4 w-4" />
-                      </button>
-                      <button
+                        <ApperIcon name="Edit2" className="h-3 w-3" />
+                      </Button>
+                      <Button
                         onClick={() => handleDeleteGoal(goal.Id)}
-                        className="p-2 text-gray-400 hover:text-error hover:bg-red-50 rounded-lg transition-colors"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs px-2 py-1 h-7 text-red-600 border-red-200 hover:bg-red-50"
                       >
-                        <ApperIcon name="Trash2" className="h-4 w-4" />
-                      </button>
+                        <ApperIcon name="Trash2" className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center justify-center mb-6">
-                    <ProgressRing
-                      progress={Math.min(progress, 100)}
-                      size={100}
-                      strokeWidth={8}
-                      color={isCompleted ? "#52C41A" : isOverdue ? "#F5222D" : "#00875A"}
-                      showPercentage={true}
-                    />
+                <div className="mb-4">
+                  <ProgressRing 
+                    progress={progress}
+                    size={80}
+                    strokeWidth={8}
+                    className="mx-auto"
+                  />
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Current</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatCurrency(currentAmount)}
+                    </span>
                   </div>
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Current</span>
-                      <span className="font-semibold text-gray-900">
-                        {formatCurrency(goal.currentAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Target</span>
-                      <span className="font-semibold text-gray-900">
-                        {formatCurrency(goal.targetAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                      <span className="text-sm font-medium text-gray-700">Remaining</span>
-                      <span className={`font-bold ${isCompleted ? "text-success" : "text-primary-600"}`}>
-                        {formatCurrency(remaining)}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Target</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatCurrency(targetAmount)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <span className="text-sm font-medium text-gray-700">Remaining</span>
+                    <span className={`font-bold ${isCompleted ? "text-success" : "text-primary-600"}`}>
+                      {formatCurrency(remaining)}
                       </span>
                     </div>
                   </div>
@@ -473,7 +483,7 @@ try {
                   {!isCompleted && (
                     <div className="mt-4">
                       <Button
-                        onClick={() => openContributeModal(goal)}
+onClick={() => openContributeModal(goal)}
                         variant="outline"
                         className="w-full"
                         size="sm"

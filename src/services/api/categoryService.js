@@ -1,31 +1,100 @@
-import categoryData from "@/services/mockData/categories.json"
+import { getApperClient } from "@/services/apperClient"
+import { toast } from "react-toastify"
 
 class CategoryService {
   constructor() {
-    this.categories = [...categoryData]
+    this.apperClient = null
   }
 
-  async delay() {
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 300 + 200))
+  getClient() {
+    if (!this.apperClient) {
+      this.apperClient = getApperClient()
+    }
+    return this.apperClient
   }
 
   async getAll() {
-    await this.delay()
-    return [...this.categories]
+    try {
+      const client = this.getClient()
+      if (!client) throw new Error("ApperClient not available")
+
+      const response = await client.fetchRecords('categories_c', {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "type_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "icon_c"}}
+        ]
+      })
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+      throw error
+    }
   }
 
   async getById(id) {
-    await this.delay()
-    const category = this.categories.find(c => c.Id === parseInt(id))
-    if (!category) {
-      throw new Error(`Category with Id ${id} not found`)
+    try {
+      const client = this.getClient()
+      if (!client) throw new Error("ApperClient not available")
+
+      const response = await client.getRecordById('categories_c', parseInt(id), {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "type_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "icon_c"}}
+        ]
+      })
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      return response.data
+    } catch (error) {
+      console.error(`Error fetching category ${id}:`, error)
+      throw error
     }
-    return { ...category }
   }
 
   async getByType(type) {
-    await this.delay()
-    return this.categories.filter(c => c.type === type)
+    try {
+      const client = this.getClient()
+      if (!client) throw new Error("ApperClient not available")
+
+      const response = await client.fetchRecords('categories_c', {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "type_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "icon_c"}}
+        ],
+        where: [{
+          "FieldName": "type_c",
+          "Operator": "EqualTo",
+          "Values": [type],
+          "Include": true
+        }]
+      })
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      return response.data || []
+    } catch (error) {
+      console.error(`Error fetching categories by type ${type}:`, error)
+      throw error
+    }
   }
 }
 
