@@ -74,7 +74,13 @@ const Goals = () => {
       return
     }
 
-    try {
+try {
+      // Validate deadline before creating Date object
+      if (!formData.deadline || isNaN(new Date(formData.deadline).getTime())) {
+        toast.error("Please enter a valid deadline date")
+        return
+      }
+
       const goalData = {
         name: formData.name,
         targetAmount: targetAmount,
